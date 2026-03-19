@@ -114,9 +114,11 @@ export default async function LessonPage(props: {
                         </div>
                      </CardHeader>
                      <CardContent className="p-4 pt-0">
-                        <Button asChild className="w-full h-10 rounded-xl font-bold text-xs" variant="secondary">
-                           <Link href={`/activities/${activity.id}`}>Complete Exercise</Link>
-                        </Button>
+                        <Link href={`/activities/${activity.id}`}>
+                           <Button className="w-full h-10 rounded-xl font-bold text-xs" variant="secondary">
+                              Complete Exercise
+                           </Button>
+                        </Link>
                      </CardContent>
                   </Card>
                 ))

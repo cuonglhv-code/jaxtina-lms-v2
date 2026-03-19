@@ -49,12 +49,12 @@ export function CourseCard({ id, title, className, schedule, instructor, progres
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button asChild className="w-full group">
-          <Link href={`/courses/${id}`} className="flex items-center justify-center gap-2">
+        <Link href={`/courses/${id}`} className="w-full">
+          <Button className="w-full group flex items-center justify-center gap-2">
             Enter Classroom
             <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
