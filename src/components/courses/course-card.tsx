@@ -1,5 +1,4 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Calendar, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -49,11 +48,12 @@ export function CourseCard({ id, title, className, schedule, instructor, progres
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Link href={`/courses/${id}`} className="w-full">
-          <Button className="w-full group flex items-center justify-center gap-2">
-            Enter Classroom
-            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Button>
+        <Link 
+          href={`/courses/${id}`} 
+          className="w-full group inline-flex items-center justify-center rounded-lg h-9 px-4 text-sm font-medium transition-all bg-primary text-primary-foreground hover:bg-primary/80 outline-none gap-2"
+        >
+          Enter Classroom
+          <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </Link>
       </CardFooter>
     </Card>

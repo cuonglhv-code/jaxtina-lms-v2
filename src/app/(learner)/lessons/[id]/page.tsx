@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, PlayCircle, FileText, CheckCircle2 } from "lucide-react";
 import Link from 'next/link';
 
@@ -102,7 +102,7 @@ export default async function LessonPage(props: {
             
             <div className="space-y-4">
               {lesson.activities && lesson.activities.length > 0 ? (
-                lesson.activities.map((activity: any) => (
+                lesson.activities.map((activity: { id: string, title: string, type: string }) => (
                   <Card key={activity.id} className="bg-white dark:bg-zinc-900 border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-lg transition-all border border-zinc-100 group">
                      <CardHeader className="p-4 flex flex-row items-center gap-4 bg-zinc-50/50 group-hover:bg-primary/5 transition-colors">
                         <div className="p-3 bg-zinc-100 rounded-xl group-hover:bg-primary transition-colors">
@@ -114,10 +114,11 @@ export default async function LessonPage(props: {
                         </div>
                      </CardHeader>
                      <CardContent className="p-4 pt-0">
-                        <Link href={`/activities/${activity.id}`}>
-                           <Button className="w-full h-10 rounded-xl font-bold text-xs" variant="secondary">
-                              Complete Exercise
-                           </Button>
+                        <Link 
+                          href={`/activities/${activity.id}`}
+                          className="w-full inline-flex items-center justify-center rounded-xl h-10 px-4 text-xs font-bold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 outline-none"
+                        >
+                          Complete Exercise
                         </Link>
                      </CardContent>
                   </Card>
