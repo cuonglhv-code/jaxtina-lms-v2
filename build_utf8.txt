@@ -1,0 +1,122 @@
+﻿
+> lms-app@0.1.0 build
+> next build
+
+node.exe : ÔÜá Warning: 
+Next.js inferred your 
+workspace root, but it may 
+not be correct.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (ÔÜá War  
+  ning: Ne...not be correc   
+ t.:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+ We detected multiple 
+lockfiles and selected the 
+directory of C:\Users\cuong\p
+ackage-lock.json as the root 
+directory.
+ To silence this warning, 
+set `turbopack.root` in your 
+Next.js config, or consider 
+removing one of the 
+lockfiles if it's not needed.
+   See https://nextjs.org/doc
+s/app/api-reference/config/ne
+xt-config-js/turbopack#root-d
+irectory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\cuong\Jaxtina 
+LMS\package-lock.json
+
+Ôû▓ Next.js 16.2.0 (Turbopack)
+- Environments: .env.local
+
+ÔÜá The "middleware" file 
+convention is deprecated. 
+Please use "proxy" instead. 
+Learn more: https://nextjs.or
+g/docs/messages/middleware-to
+-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 3.0s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/(learner)/lessons/[
+id]/page.tsx:117:33
+Type error: Type '{ 
+children: Element; asChild: 
+true; className: string; 
+variant: "secondary"; }' is 
+not assignable to type 
+'IntrinsicAttributes & 
+ButtonProps & 
+VariantProps<(props?: 
+(ConfigVariants<{ variant: { 
+default: string; outline: 
+string; secondary: string; 
+ghost: string; destructive: 
+string; link: string; }; 
+size: { ...; }; }> & 
+ClassProp) | undefined) => 
+string>'.
+  Property 'asChild' does 
+not exist on type 
+'IntrinsicAttributes & 
+ButtonProps & 
+VariantProps<(props?: 
+(ConfigVariants<{ variant: { 
+default: string; outline: 
+string; secondary: string; 
+ghost: string; destructive: 
+string; link: string; }; 
+size: { ...; }; }> & 
+ClassProp) | undefined) => 
+string>'.
+
+  [90m115 |[0m             
+         
+</[33mCardHeader[0m>
+  [90m116 |[0m             
+         
+<[33mCardContent[0m 
+className=[32m"p-4 
+pt-0"[0m>
+[31m[1m>[0m [90m117 
+|[0m                        
+ <[33mButton[0m asChild 
+className=[32m"w-full h-10 
+rounded-xl font-bold 
+text-...[0m
+  [90m    |[0m             
+                    
+[31m[1m^[0m
+  [90m118 |[0m             
+               
+<[33mLink[0m href={[32m`/a
+ctivities/[0m${activity.id[
+32m}`[0m}>[33mComplete[0m 
+[33mExercise[0m</[33mL...
+[0m
+  [90m119 |[0m             
+            
+</[33mButton[0m>
+  [90m120 |[0m             
+         
+</[33mCardContent[0m>
+Next.js build worker exited 
+with code: 1 and signal: null
