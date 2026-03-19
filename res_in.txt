@@ -1,0 +1,10 @@
+src/app/(admin)/users/page.tsx:18:    return redirect("/auth/sign-in");
+src/app/(auth)/actions.ts:18:    redirect('/auth/sign-in?error=' + encodeURIComponent(error.message))
+src/app/(auth)/actions.ts:52:  redirect('/auth/sign-in')
+src/app/(auth)/sign-up/page.tsx:69:            <Link href="/auth/sign-in" className="text-primary hover:underline">
+src/app/(learner)/activities/[id]/page.tsx:23:    return redirect("/auth/sign-in");
+src/app/(learner)/courses/[id]/page.tsx:22:    return redirect("/auth/sign-in");
+src/app/(learner)/courses/page.tsx:18:    return redirect("/auth/sign-in");
+src/app/(learner)/lessons/[id]/page.tsx:22:    return redirect("/auth/sign-in");
+src/app/(main)/dashboard/page.tsx:15:    return redirect("/auth/sign-in");
+

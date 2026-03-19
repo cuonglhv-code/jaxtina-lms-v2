@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   // If not logged in, go to sign-in
   if (authError || !user) {
-    return redirect("/auth/sign-in");
+    return redirect("/sign-in");
   }
 
   // Get the user's profile to check their role

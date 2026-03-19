@@ -66,7 +66,7 @@ export default async function SignUpPage(props: {
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/auth/sign-in" className="text-primary hover:underline">
+            <Link href="/sign-in" className="text-primary hover:underline">
               Sign In
             </Link>
           </div>

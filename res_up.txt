@@ -1,0 +1,4 @@
+src/app/(auth)/actions.ts:41:    redirect('/auth/sign-up?error=' + encodeURIComponent(error.message))
+src/app/(auth)/actions.ts:45:  redirect('/auth/sign-up?message=Check your email to confirm your account')
+src/app/(auth)/sign-in/page.tsx:60:            <Link href="/auth/sign-up" className="text-primary hover:underline">
+

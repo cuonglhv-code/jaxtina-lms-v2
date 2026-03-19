@@ -15,7 +15,7 @@ export default async function CourseCatalogPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/auth/sign-in");
+    return redirect("/sign-in");
   }
 
   // Fetch all available courses from Supabase
