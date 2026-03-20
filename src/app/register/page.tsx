@@ -235,7 +235,7 @@ export default function RegisterPage() {
     })
 
     if (profileError) {
-      setGlobalError('Database error saving new user: ' + profileError.message)
+      setGlobalError('Profile error: ' + profileError.message + ' | Code: ' + profileError.code)
       setLoading(false)
       return
     }
