@@ -4,8 +4,11 @@ export interface Profile {
   id: string;
   full_name: string;
   role: UserRole;
+  display_name?: string;
   avatar_url?: string;
-  phone_number?: string;
+  phone?: string;
+  email?: string;
+  preferred_lang?: string;
   created_at: string;
   updated_at: string;
 }
