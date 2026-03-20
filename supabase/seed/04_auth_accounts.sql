@@ -20,7 +20,7 @@
 INSERT INTO user_profiles (id, role, full_name, email, preferred_lang, created_at, updated_at)
 VALUES
   (
-    'REPLACE-ADMIN-UUID',
+    'a3ab1cd9-59a1-4138-990c-e6a5207758c5',
     'super_admin',
     'Cuong Le',
     'cuonglhv@jaxtina.com',
@@ -29,7 +29,7 @@ VALUES
     NOW()
   ),
   (
-    'REPLACE-TEACHER-UUID',
+    'f505202a-2b71-4a76-9ac8-e0a6afdab149',
     'teacher',
     'Jaxtina Teacher',
     'teacher@jaxtina.com',
@@ -38,7 +38,7 @@ VALUES
     NOW()
   ),
   (
-    'REPLACE-STUDENT-UUID',
+    '5ae26ec8-5512-4d84-82a5-a7e2c9ed992e',
     'learner',
     'Demo Student',
     'student@jaxtina.com',

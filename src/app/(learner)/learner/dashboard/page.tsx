@@ -26,7 +26,8 @@ export default async function LearnerDashboardPage() {
     { count: lessonsCompleted },
     { count: totalSubmissions },
     { data: enrollments },
-    { data: recentActivity }
+    { data: recentActivity },
+    { data: quickTasks }
   ] = await Promise.all([
     supabase.from('submissions').select('*', { count: 'exact', head: true }).eq('student_id', user.id).eq('status', 'graded'),
     supabase.from('submissions').select('*', { count: 'exact', head: true }).eq('student_id', user.id),
@@ -35,7 +36,12 @@ export default async function LearnerDashboardPage() {
       .select('*, activities(title, type), scores(score, max_score)')
       .eq('student_id', user.id)
       .order('submitted_at', { ascending: false })
-      .limit(5)
+      .limit(5),
+    supabase.from('activities')
+      .select('id, title, exam_target')
+      .eq('type', 'essay')
+      .in('exam_target', ['task_1', 'task_2'])
+      .limit(2)
   ]);
 
   const learnerEnrollments = (enrollments as unknown as (ClassEnrolment & { classes: Class & { courses: Course } })[]) || [];
@@ -135,12 +141,19 @@ export default async function LearnerDashboardPage() {
             <h3 className="font-sans font-semibold text-[var(--ink)] mb-2">Quick Practice</h3>
             <p className="font-sans text-sm text-[var(--mist)] mb-4">Start an IELTS Writing practice</p>
             <div className="space-y-3">
-              <Link href="/learner/practice/task1" className="block w-full text-center py-2 px-4 rounded-lg border border-[var(--jade)] text-[var(--jade)] hover:bg-[var(--jade-light)] font-medium transition-colors">
-                IELTS Task 1
-              </Link>
-              <Link href="/learner/practice/task2" className="block w-full text-center py-2 px-4 rounded-lg border border-[var(--jade)] text-[var(--jade)] hover:bg-[var(--jade-light)] font-medium transition-colors">
-                IELTS Task 2
-              </Link>
+              {quickTasks && quickTasks.length > 0 ? (
+                quickTasks.map((task) => (
+                  <Link 
+                    key={task.id} 
+                    href={`/practice/${task.id}`} 
+                    className="block w-full text-center py-2 px-4 rounded-lg border border-[var(--jade)] text-[var(--jade)] hover:bg-[var(--jade-light)] font-medium transition-colors uppercase text-[10px] tracking-widest italic"
+                  >
+                    {task.exam_target === 'task_1' ? 'Task 1: ' : 'Task 2: '} {task.title}
+                  </Link>
+                ))
+              ) : (
+                <p className="text-xs text-[var(--mist)] italic">No practice tasks available.</p>
+              )}
             </div>
           </div>
 
