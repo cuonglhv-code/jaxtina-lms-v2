@@ -4,6 +4,39 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+export async function createCourse(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const allowedRoles = ['teacher', 'super_admin', 'centre_admin', 'academic_admin'];
+  if (!profile || !allowedRoles.includes(profile.role)) {
+    throw new Error('Unauthorized: Teacher or Admin role required');
+  }
+
+  const title = formData.get('title') as string;
+  const exam_type = formData.get('exam_type') as string;
+  const description = formData.get('description') as string;
+
+  if (!title || !exam_type) throw new Error('Title and exam type are required');
+
+  const { error } = await supabase
+    .from('courses')
+    .insert({ title, exam_type, description });
+
+  if (error) throw new Error(`Failed to create course: ${error.message}`);
+
+  revalidatePath('/teacher/dashboard');
+  redirect('/teacher/dashboard');
+}
+
 /**
  * Finalizes the marking flow for a specific submission.
  * This is an atomic action that reveals feedback to the student
