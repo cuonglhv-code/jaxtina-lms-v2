@@ -5,7 +5,8 @@
       "Bash(pnpm build:*)",
       "Bash(supabase status:*)",
       "Bash(npx supabase:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
