@@ -75,6 +75,24 @@ export interface Activity {
   created_at: string;
 }
 
+export interface Score {
+  id: string;
+  submission_id: string;
+  teacher_id?: string;
+  score: number;
+  max_score: number;
+  marked_at: string;
+}
+
+export interface Feedback {
+  id: string;
+  submission_id: string;
+  teacher_id?: string;
+  content: string;
+  is_visible: boolean;
+  created_at: string;
+}
+
 export interface Submission {
   id: string;
   activity_id: string;
@@ -82,11 +100,13 @@ export interface Submission {
   status: 'draft' | 'submitted' | 'under_review' | 'graded';
   content?: string;
   file_url?: string;
-  score?: number;
-  feedback?: string;
-  teacher_id?: string;
   submitted_at: string;
-  graded_at?: string;
+  
+  // Relational help (joined data)
+  activities?: Activity;
+  profiles?: Profile;
+  scores?: Score[];
+  feedback?: Feedback[];
 }
 
 export interface AIFeedbackLog {

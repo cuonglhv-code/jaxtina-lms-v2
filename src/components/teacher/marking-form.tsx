@@ -16,8 +16,8 @@ interface MarkingFormProps {
 }
 
 export function MarkingForm({ submission }: MarkingFormProps) {
-  const [score, setScore] = useState(submission.score?.toString() || '');
-  const [feedback, setFeedback] = useState(submission.feedback || '');
+  const [score, setScore] = useState(submission.scores?.[0]?.score?.toString() || '');
+  const [feedback, setFeedback] = useState(submission.feedback?.[0]?.content || '');
 
   const applyAIDraft = (aiScore: number, aiFeedback: string) => {
     setScore(aiScore.toString());

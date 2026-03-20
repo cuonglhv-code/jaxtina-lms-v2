@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { StatCard } from '@/components/layout/StatCard';
 import { Users, GraduationCap, Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Profile, Submission, ClassTeacher, Class, Course, Activity } from '@/types/database';
 
 export default async function TeacherDashboardPage() {
   const supabase = await createClient();
@@ -9,13 +10,46 @@ export default async function TeacherDashboardPage() {
   
   if (!user) return null;
 
+  // 1. Fetch Teacher Profile
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('full_name')
+    .select('*')
     .eq('id', user.id)
     .single();
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Teacher';
+
+  // 2. Fetch Assigned Classes
+  const { data: assignedClasses } = await supabase
+    .from('class_teachers')
+    .select('classes(*, courses(title))')
+    .eq('teacher_id', user.id);
+
+  // Map and cast to escape "any[]" inference if Supabase treats the join as a set 
+  const casts = (assignedClasses as unknown as (ClassTeacher & { classes: Class & { courses: Course | null } })[]) || [];
+  const classIds = casts.map(ac => ac.classes?.id).filter(Boolean);
+  
+  // 3. Fetch Aggregate Stats
+  const [
+    { count: activeClassesCount },
+    { count: learnerCount },
+    { data: pendingSubmissions },
+    { count: reviewedTodayCount }
+  ] = await Promise.all([
+    supabase.from('class_teachers').select('*', { count: 'exact', head: true }).eq('teacher_id', user.id),
+    supabase.from('class_enrolments').select('*', { count: 'exact', head: true }).in('class_id', classIds),
+    supabase.from('submissions')
+      .select('*, activities(title, type), profiles:student_id(full_name, avatar_url)')
+      .in('status', ['submitted', 'under_review'])
+      .order('submitted_at', { ascending: true })
+      .limit(5),
+    supabase.from('scores')
+      .select('*', { count: 'exact', head: true })
+      .eq('teacher_id', user.id)
+      .gte('marked_at', new Date().toISOString().split('T')[0])
+  ]);
+
+  const teacherSubmissions = (pendingSubmissions as unknown as (Submission & { activities: Activity, profiles: Profile })[]) || [];
 
   return (
     <div className="space-y-8">
@@ -25,49 +59,87 @@ export default async function TeacherDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={Users} iconBg="var(--ocean)" value="0" label="Active Classes" />
-        <StatCard icon={GraduationCap} iconBg="var(--jade)" value="0" label="Total Learners" />
-        <StatCard icon={Clock} iconBg="#F59E0B" value="0" label="Essays to Review" />
-        <StatCard icon={CheckCircle} iconBg="#10B981" value="0" label="Reviewed Today" />
+        <StatCard icon={Users} iconBg="var(--ocean)" value={activeClassesCount || 0} label="Active Classes" />
+        <StatCard icon={GraduationCap} iconBg="var(--jade)" value={learnerCount || 0} label="Total Learners" />
+        <StatCard icon={Clock} iconBg="#F59E0B" value={teacherSubmissions.length} label="Essays to Review" />
+        <StatCard icon={CheckCircle} iconBg="#10B981" value={reviewedTodayCount || 0} label="Reviewed Today" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-8">
           <section>
             <h2 className="font-display text-[22px] mb-4 text-[var(--midnight)]">My Classes</h2>
-            <div className="bg-white rounded-[16px] border border-[var(--border)] p-8 text-center shadow-[var(--card-shadow)]">
-              <h3 className="font-sans font-semibold text-[var(--ink)] mb-2">No classes assigned yet</h3>
-              <p className="font-sans text-[var(--mist)] mb-6">Contact admin to be assigned to a class</p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                {[1, 2].map((i) => (
-                  <div key={i} className="border border-[var(--border)] border-dashed rounded-xl p-4 bg-[var(--chalk)]">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                    <div className="flex justify-between items-center">
-                      <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-                      <div className="h-8 w-24 bg-gray-200 rounded"></div>
+            {casts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {casts.map((ac) => (
+                  <div key={ac.classes.id} className="bg-white rounded-[16px] border border-[var(--border)] p-6 shadow-sm hover:shadow-[var(--card-shadow)] transition-all group">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-sans font-bold text-[var(--ink)] group-hover:text-[var(--jade)] transition-colors">{ac.classes.class_name}</h4>
+                        <p className="text-xs text-[var(--mist)]">{ac.classes.courses?.title}</p>
+                      </div>
+                      <span className="bg-[var(--jade-light)] text-[var(--jade)] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Active</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1 text-[var(--mist)]">
+                        <Users size={14} />
+                        <span>View Students</span>
+                      </div>
+                      <Link href={`/teacher/classes/${ac.classes.id}`} className="p-2 bg-[var(--chalk)] rounded-lg hover:bg-[var(--jade-light)] transition-colors">
+                        <ArrowRight size={16} className="text-[var(--mist)] group-hover:text-[var(--jade)]" />
+                      </Link>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-[16px] border border-[var(--border)] p-8 text-center shadow-[var(--card-shadow)]">
+                <h3 className="font-sans font-semibold text-[var(--ink)] mb-2">No classes assigned yet</h3>
+                <p className="font-sans text-[var(--mist)]">Contact admin to be assigned to a class</p>
+              </div>
+            )}
           </section>
 
           <section>
             <h2 className="font-display text-[22px] mb-4 text-[var(--midnight)]">Recent Submissions</h2>
             <div className="bg-white rounded-[16px] border border-[var(--border)] shadow-[var(--card-shadow)] overflow-hidden">
-              <table className="w-full text-left font-sans text-sm">
-                <thead className="bg-[var(--chalk)] border-b border-[var(--border)] text-[var(--mist)]">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Learner</th>
-                    <th className="px-6 py-4 font-medium">Assignment</th>
-                    <th className="px-6 py-4 font-medium">AI Band</th>
-                    <th className="px-6 py-4 font-medium">Action</th>
-                  </tr>
-                </thead>
-              </table>
-              <div className="p-8 text-center text-[var(--mist)]">No submissions to review</div>
+              {teacherSubmissions.length > 0 ? (
+                <table className="w-full text-left font-sans text-sm">
+                  <thead className="bg-[var(--chalk)] border-b border-[var(--border)] text-[var(--mist)]">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Learner</th>
+                      <th className="px-6 py-4 font-medium">Assignment</th>
+                      <th className="px-6 py-4 font-medium">Type</th>
+                      <th className="px-6 py-4 font-medium">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {teacherSubmissions.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-[var(--chalk)] transition-colors">
+                        <td className="px-6 py-4 flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-[var(--sand)] flex items-center justify-center text-[var(--midnight)] font-bold text-xs uppercase overflow-hidden">
+                              {sub.profiles?.avatar_url ? (
+                                <img src={sub.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span>{sub.profiles?.full_name?.charAt(0)}</span>
+                              )}
+                           </div>
+                           <span className="font-medium">{sub.profiles?.full_name}</span>
+                        </td>
+                        <td className="px-6 py-4">{sub.activities?.title}</td>
+                        <td className="px-6 py-4 capitalize text-[var(--mist)]">{sub.activities?.type}</td>
+                        <td className="px-6 py-4">
+                          <Link href={`/teacher/marking/${sub.id}`} className="inline-flex items-center gap-1 text-[var(--jade)] font-semibold hover:underline">
+                            Mark Now <ArrowRight size={14} />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-8 text-center text-[var(--mist)]">No submissions to review</div>
+              )}
             </div>
           </section>
         </div>
@@ -76,10 +148,26 @@ export default async function TeacherDashboardPage() {
           <div className="bg-white rounded-[16px] border border-[var(--border)] p-8 shadow-[var(--card-shadow)] text-center">
             <h3 className="font-display text-xl text-[var(--midnight)] mb-2">Marking Queue</h3>
             <div className="w-24 h-24 mx-auto my-6 relative border-4 border-[var(--chalk)] rounded-xl bg-white shadow-sm flex items-center justify-center">
-              <CheckCircle className="text-[var(--jade)]" size={40} />
+              {teacherSubmissions.length > 0 ? (
+                <span className="text-3xl font-black text-[var(--ocean)]">{teacherSubmissions.length}</span>
+              ) : (
+                <CheckCircle className="text-[var(--jade)]" size={40} />
+              )}
             </div>
-            <h4 className="font-sans font-semibold text-[var(--ink)]">All caught up!</h4>
-            <p className="font-sans text-sm text-[var(--mist)] mt-1">New submissions will appear here</p>
+            {teacherSubmissions.length > 0 ? (
+              <>
+                <h4 className="font-sans font-semibold text-[var(--ink)]">Items pending review</h4>
+                <p className="font-sans text-sm text-[var(--mist)] mt-1">Your attention is needed</p>
+                <Link href="/teacher/marking" className="mt-4 block w-full py-2 bg-[var(--ocean)] text-white font-bold rounded-lg hover:bg-opacity-90 transition-all">
+                  View Full Queue
+                </Link>
+              </>
+            ) : (
+              <>
+                <h4 className="font-sans font-semibold text-[var(--ink)]">All caught up!</h4>
+                <p className="font-sans text-sm text-[var(--mist)] mt-1">New submissions will appear here</p>
+              </>
+            )}
           </div>
 
           <div className="bg-white rounded-[16px] border border-[var(--border)] p-6 shadow-[var(--card-shadow)]">
