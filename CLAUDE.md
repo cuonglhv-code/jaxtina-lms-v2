@@ -15,13 +15,33 @@ A production-ready Learning Management System (LMS) for an English language teac
 - **Teacher**: Create/manage courses and materials, build exams, mark submissions, utilize AI for draft feedback (reviewing and editing before student visibility), and monitor class performance.
 - **Admin**: Manage all users, course catalogs, and class schedules. View centre-wide live analytics (total students, enrolments, teacher workloads, cohort trends).
 
-## 4. Core Data Model (High-Level)
-- `users` (Auth) & `profiles`: Roles (student/teacher/admin) and personal info.
+## 4. Core Data Model
+
+### `user_profiles` (production table — exact columns)
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID PK | References `auth.users(id)` |
+| `role` | TEXT | `super_admin` · `centre_admin` · `academic_admin` · `teacher` · `learner` |
+| `full_name` | TEXT | |
+| `display_name` | TEXT | Optional display alias |
+| `avatar_url` | TEXT | |
+| `phone` | TEXT | |
+| `email` | TEXT | |
+| `preferred_lang` | TEXT | Default `'vi'` |
+| `created_at` | TIMESTAMPTZ | |
+| `updated_at` | TIMESTAMPTZ | |
+
+> **Important:** Always query `user_profiles`, never `profiles`. Role values are text strings, not an enum.
+
+### Other tables
 - `courses` → `modules` → `lessons`: Curriculum structure.
-- `classes`: Links students (`class_enrolments`), teachers (`class_teachers`), and courses.
-- `activities` & `questions`: Quizzes, essays, speaking tasks.
-- `submissions`, `scores`, & `feedback`: Student answers and teacher grading.
-- `ai_feedback_logs`: Securely isolated logs of AI outputs and metadata.
+- `classes`: Scheduled instances of a course.
+- `class_enrolments`: Links learners to classes.
+- `class_teachers`: Links teachers to classes.
+- `activities`: Quizzes, essays, speaking tasks linked to lessons.
+- `submissions`: Student answers to activities.
+- `scores` & `feedback`: Teacher marks and written feedback.
+- `ai_feedback_logs`: Isolated AI output log, never visible to students directly.
 
 ## 5. AI Features (Server-Side Only)
 1. **Essay Feedback**: Suggests bands, breaks down criteria, and offers actionable tips.
