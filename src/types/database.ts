@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'admin';
+export type UserRole = 'super_admin' | 'centre_admin' | 'academic_admin' | 'teacher' | 'learner';
 
 export interface Profile {
   id: string;
@@ -17,6 +17,7 @@ export interface Course {
   thumbnail_url?: string;
   exam_type: string; // 'IELTS' | 'TOEIC' | 'General English' | 'Business English'
   created_at: string;
+  updated_at: string;
 }
 
 export interface Module {
@@ -86,4 +87,13 @@ export interface Submission {
   teacher_id?: string;
   submitted_at: string;
   graded_at?: string;
+}
+
+export interface AIFeedbackLog {
+  id: string;
+  submission_id: string;
+  prompt: string;
+  response: string;
+  model: string;
+  created_at: string;
 }

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, User, Mail, ShieldCheck, MoreHorizontal, UserCog, UserMinus } from "lucide-react";
 import Link from 'next/link';
+import { Profile } from "@/types/database";
 
 export default async function UserManagementPage() {
   const supabase = await createClient();
@@ -20,9 +21,11 @@ export default async function UserManagementPage() {
 
   // Fetch all profiles
   const { data: users, error } = await supabase
-    .from('profiles')
+    .from('user_profiles')
     .select('*')
     .order('created_at', { ascending: false });
+
+  const ADMIN_ROLES = ['super_admin', 'centre_admin', 'academic_admin'];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 p-6 md:p-12 lg:p-20">
@@ -64,14 +67,14 @@ export default async function UserManagementPage() {
                                <User className="w-5 h-5 text-zinc-500 group-hover:text-emerald-500 transition-colors" />
                             </div>
                             <div>
-                               <p className="text-lg font-black italic uppercase tracking-tighter text-zinc-200 group-hover:text-white transition-colors">{profile.full_name}</p>
-                               <p className="text-[10px] font-mono text-zinc-600 uppercase italic">ID: {profile.id.substring(0, 8)}</p>
+                               <p className="text-lg font-black italic uppercase tracking-tighter text-zinc-200 group-hover:text-white transition-colors">{(profile as Profile).full_name}</p>
+                               <p className="text-[10px] font-mono text-zinc-600 uppercase italic">ID: {(profile as Profile).id.substring(0, 8)}</p>
                             </div>
                          </div>
                       </TableCell>
                       <TableCell className="p-6">
-                         <Badge variant={profile.role === 'admin' ? 'default' : 'outline'} className={`rounded-lg uppercase font-black italic tracking-widest text-[10px] ${profile.role === 'admin' ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/20' : (profile.role === 'teacher' ? 'text-indigo-400 border-indigo-400/20' : 'text-zinc-500 border-zinc-800')}`}>
-                            {profile.role}
+                         <Badge variant={ADMIN_ROLES.includes((profile as Profile).role) ? 'default' : 'outline'} className={`rounded-lg uppercase font-black italic tracking-widest text-[10px] ${ADMIN_ROLES.includes((profile as Profile).role) ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/20' : ((profile as Profile).role === 'teacher' ? 'text-indigo-400 border-indigo-400/20' : 'text-zinc-500 border-zinc-800')}`}>
+                            {(profile as Profile).role.replace('_', ' ')}
                          </Badge>
                       </TableCell>
                       <TableCell className="p-6">

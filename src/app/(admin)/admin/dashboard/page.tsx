@@ -3,6 +3,7 @@ import { StatCard } from '@/components/layout/StatCard';
 import { GraduationCap, UserCheck, BookOpen, TrendingUp, BookPlus, Users, BarChart2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import Link from 'next/link';
+import { Profile } from '@/types/database';
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -22,7 +23,7 @@ export default async function AdminDashboardPage() {
   const ADMIN_ROLES = ['super_admin', 'centre_admin', 'academic_admin'];
 
   // Derive "This Month" count inline for provisional rendering
-  const newLearnersCount = recentUsers?.filter(u => u.role === 'learner').length || 0; 
+  const newLearnersCount = (recentUsers as unknown as Profile[])?.filter(u => u.role === 'learner').length || 0; 
   const totalUsers = (learnerCount || 0) + (teacherCount || 0) + 1; // +1 for at least this admin
 
   return (
@@ -57,7 +58,7 @@ export default async function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
-                    {recentUsers.map((user: any) => (
+                    {(recentUsers as unknown as Profile[]).map((user: Profile) => (
                       <tr key={user.id} className="hover:bg-[var(--chalk)] transition-colors">
                         <td className="px-6 py-4 flex items-center gap-3">
                           <Avatar name={user.full_name} size="sm" imageUrl={user.avatar_url} />
@@ -116,15 +117,15 @@ export default async function AdminDashboardPage() {
             <div className="space-y-4 font-sans text-sm">
               <div className="flex justify-between items-center pb-4 border-b border-[var(--border)]">
                 <span className="text-[var(--mist)]">Database</span>
-                <span className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Connected</span>
+                <div className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Connected</div>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-[var(--border)]">
                 <span className="text-[var(--mist)]">AI Scoring</span>
-                <span className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Active</span>
+                <div className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Active</div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[var(--mist)]">Authentication</span>
-                <span className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Active</span>
+                <div className="flex items-center gap-2 text-[var(--ink)] font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>Active</div>
               </div>
             </div>
           </div>
