@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(pnpm build:*)",
+      "Bash(supabase status:*)",
+      "Bash(npx supabase:*)"
+    ]
+  }
+}
