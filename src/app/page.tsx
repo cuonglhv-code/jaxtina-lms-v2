@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -19,10 +20,18 @@ export default function Home() {
               Tailwind CSS and shadcn/ui have been successfully integrated. This card and the button below are living proof!
             </p>
           </div>
-          <Button className="w-full font-semibold" size="lg">
-            Get Started
-          </Button>
-          <p className="text-center text-xs text-zinc-400">
+          <Link href="/sign-in" className="w-full">
+            <Button className="w-full font-semibold" size="lg">
+              Get Started
+            </Button>
+          </Link>
+          <div className="text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link href="/sign-up" className="text-primary hover:underline font-medium">
+              Sign Up
+            </Link>
+          </div>
+          <p className="text-center text-xs text-zinc-400 mt-4">
             Next.js + Supabase + Vercel
           </p>
         </CardContent>
