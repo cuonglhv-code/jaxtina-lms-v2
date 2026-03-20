@@ -1,92 +1,88 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
-export async function createCourse(formData: FormData) {
-  const supabase = await createClient()
+/**
+ * Finalizes the marking flow for a specific submission.
+ * This is an atomic action that reveals feedback to the student
+ * and updates the submission status to 'graded'.
+ */
+export async function finalizeMarkingAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
 
-  const title = formData.get('title') as string
-  const description = formData.get('description') as string
-  const exam_type = formData.get('exam_type') as string
+  // 1. Verify Teacher/Admin Role
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-  const { data: course, error } = await supabase
-    .from('courses')
-    .insert({
-      title,
-      description,
-      exam_type,
-    })
-    .select()
-    .single()
+  const allowedRoles = ['teacher', 'super_admin', 'centre_admin', 'academic_admin'];
+  if (!profile || !allowedRoles.includes(profile.role)) {
+    throw new Error('Unauthorized: Teacher or Admin role required for marking');
+  }
 
-  if (error) throw new Error(error.message)
+  // 2. Extract and Validate Form Data
+  const submissionId = formData.get('submission_id') as string;
+  const scoreInput = formData.get('score') as string;
+  const feedbackInput = formData.get('feedback') as string;
 
-  revalidatePath('/courses')
-  revalidatePath('/teacher/dashboard')
-  redirect(`/teacher/courses/${course.id}/edit`)
-}
+  if (!submissionId || !scoreInput || !feedbackInput) {
+    throw new Error('Missing required fields (submissionId, score, or feedback)');
+  }
 
-export async function createModule(formData: FormData) {
-  const supabase = await createClient()
+  const score = parseFloat(scoreInput);
+  if (isNaN(score)) {
+    throw new Error('Invalid score: Must be a numeric value');
+  }
 
-  const course_id = formData.get('course_id') as string
-  const title = formData.get('title') as string
-  const order_index = Number(formData.get('order_index') || 0)
+  // 3. ATOMIC TRANSACTIONS (Using individual upserts since we are in a server action)
+  
+  // Update/Insert official Score
+  const { error: scoreError } = await supabase
+    .from('scores')
+    .upsert({
+      submission_id: submissionId,
+      teacher_id: user.id,
+      score: score,
+      max_score: 9.0,
+      marked_at: new Date().toISOString()
+    }, { onConflict: 'submission_id' });
 
-  const { error } = await supabase
-    .from('modules')
-    .insert({ course_id, title, order_index })
+  if (scoreError) throw new Error(`Score finalization failed: ${scoreError.message}`);
 
-  if (error) throw new Error(error.message)
+  // Update/Insert official Feedback & Reveal to Student
+  const { error: feedbackError } = await supabase
+    .from('feedback')
+    .upsert({
+      submission_id: submissionId,
+      teacher_id: user.id,
+      content: feedbackInput,
+      is_visible: true // This publishes the feedback to the student
+    }, { onConflict: 'submission_id' });
 
-  revalidatePath(`/teacher/courses/${course_id}/edit`)
-}
+  if (feedbackError) throw new Error(`Feedback finalization failed: ${feedbackError.message}`);
 
-export async function createLesson(formData: FormData) {
-  const supabase = await createClient()
-
-  const module_id = formData.get('module_id') as string
-  const course_id = formData.get('course_id') as string
-  const title = formData.get('title') as string
-  const content = formData.get('content') as string
-  const order_index = Number(formData.get('order_index') || 0)
-
-  const { error } = await supabase
-    .from('lessons')
-    .insert({ module_id, title, content, order_index })
-
-  if (error) throw new Error(error.message)
-
-  revalidatePath(`/teacher/courses/${course_id}/edit`)
-}
-
-export async function submitMarking(formData: FormData) {
-  const supabase = await createClient()
-
-  const submission_id = formData.get('submission_id') as string
-  const score = Number(formData.get('score'))
-  const feedback = formData.get('feedback') as string
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const { error } = await supabase
+  // Transition Submission Status to 'graded'
+  const { error: statusError } = await supabase
     .from('submissions')
-    .update({
-      score,
-      feedback,
-      status: 'graded',
-      graded_at: new Date().toISOString(),
-      teacher_id: user?.id
-    })
-    .eq('id', submission_id)
+    .update({ status: 'graded' })
+    .eq('id', submissionId);
 
-  if (error) throw new Error(error.message)
+  if (statusError) throw new Error(`Status transition failed: ${statusError.message}`);
 
-  revalidatePath('/teacher/dashboard')
-  revalidatePath('/teacher/marking')
-  redirect('/teacher/dashboard')
+  // 4. Cache Clearing & Redirection
+  revalidatePath('/teacher/dashboard');
+  revalidatePath('/learner/dashboard');
+  revalidatePath(`/learner/submissions/${submissionId}`);
+  revalidatePath(`/teacher/marking/${submissionId}`);
+  
+  redirect('/teacher/dashboard');
 }
