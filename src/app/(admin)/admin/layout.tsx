@@ -36,10 +36,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const navItems = [
     { label: 'Dashboard',  href: '/admin/dashboard',  icon: 'LayoutDashboard' },
+    { label: 'Users',      href: '/admin/users',       icon: 'Users' },
     { label: 'Courses',    href: '/admin/courses',     icon: 'BookOpen' },
-    { label: 'Classes',    href: '/admin/classes',     icon: 'Users' },
-    { label: 'Learners',   href: '/admin/learners',    icon: 'GraduationCap' },
-    { label: 'Teachers',   href: '/admin/teachers',    icon: 'UserCheck' },
+    { label: 'Classes',    href: '/admin/classes',     icon: 'GraduationCap' },
     { label: 'Analytics',  href: '/admin/analytics',   icon: 'BarChart2' },
     { label: 'Settings',   href: '/admin/settings',    icon: 'Settings' },
   ];

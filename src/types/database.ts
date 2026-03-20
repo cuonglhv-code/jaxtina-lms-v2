@@ -19,6 +19,9 @@ export interface Course {
   description?: string;
   thumbnail_url?: string;
   exam_type: string; // 'IELTS' | 'TOEIC' | 'General English' | 'Business English'
+  level?: string;
+  target_skill?: string;
+  is_published?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +51,11 @@ export interface Class {
   class_name: string;
   schedule?: string;
   is_active: boolean;
+  teacher_id?: string;
+  start_date?: string;
+  end_date?: string;
+  max_students?: number;
+  status?: string;
   created_at: string;
 }
 

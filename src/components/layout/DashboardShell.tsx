@@ -10,6 +10,9 @@ import {
   MessageSquare, BookPlus,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+import { LangToggle } from '@/components/ui/LangToggle';
+import { useLang } from '@/hooks/useLang';
+import { ROLE_LABELS } from '@/lib/i18n/translations';
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   LayoutDashboard, BookOpen, Users, GraduationCap, UserCheck,
@@ -39,6 +42,8 @@ interface DashboardShellProps {
 export const DashboardShell: React.FC<DashboardShellProps> = ({ navItems, userProfile, children }) => {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { lang } = useLang();
+  const roleLabel = ROLE_LABELS[lang][userProfile.role] ?? userProfile.role;
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-[var(--midnight)] text-white p-6">
@@ -69,18 +74,24 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ navItems, userPr
         })}
       </nav>
 
-      <div className="pt-6 border-t border-white/10 mt-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar name={userProfile.full_name} size="md" imageUrl={userProfile.avatar_url} />
-          <div className="flex flex-col">
-            <span className="font-sans text-sm font-medium line-clamp-1">{userProfile.full_name}</span>
-            <span className="font-sans text-xs text-[var(--mist)] uppercase tracking-wider">{userProfile.role}</span>
+      <div className="pt-6 border-t border-white/10 mt-auto space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar name={userProfile.full_name} size="md" imageUrl={userProfile.avatar_url} />
+            <div className="flex flex-col">
+              <span className="font-sans text-sm font-medium line-clamp-1">{userProfile.full_name}</span>
+              <span className="font-sans text-xs text-[var(--mist)] uppercase tracking-wider">{roleLabel}</span>
+            </div>
           </div>
+          <button
+            onClick={() => { window.location.href = '/logout'; }}
+            className="text-gray-400 hover:text-white transition-colors p-1"
+            aria-label="Logout"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
-        <button className="flex items-center gap-3 text-sm text-gray-400 hover:text-white w-full px-2 py-2 transition-colors">
-          <LogOut size={16} />
-          Logout
-        </button>
+        <LangToggle />
       </div>
     </div>
   );
