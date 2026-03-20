@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { LayoutDashboard, Users, FileText, GraduationCap, FolderOpen, Settings } from 'lucide-react';
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,12 +19,12 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   }
 
   const navItems = [
-    { label: 'Dashboard', href: '/teacher/dashboard', icon: LayoutDashboard },
-    { label: 'My Classes', href: '/teacher/classes', icon: Users },
-    { label: 'Submissions', href: '/teacher/submissions', icon: FileText },
-    { label: 'Learners', href: '/teacher/learners', icon: GraduationCap },
-    { label: 'Resources', href: '/teacher/resources', icon: FolderOpen },
-    { label: 'Settings', href: '/teacher/settings', icon: Settings },
+    { label: 'Dashboard', href: '/teacher/dashboard', icon: 'LayoutDashboard' },
+    { label: 'My Classes', href: '/teacher/classes', icon: 'Users' },
+    { label: 'Submissions', href: '/teacher/submissions', icon: 'FileText' },
+    { label: 'Learners', href: '/teacher/learners', icon: 'GraduationCap' },
+    { label: 'Resources', href: '/teacher/resources', icon: 'FolderOpen' },
+    { label: 'Settings', href: '/teacher/settings', icon: 'Settings' },
   ];
 
   return (

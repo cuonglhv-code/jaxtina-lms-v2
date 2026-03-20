@@ -3,13 +3,24 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LucideIcon, Menu, X, LogOut } from 'lucide-react';
+import {
+  Menu, X, LogOut,
+  LayoutDashboard, BookOpen, Users, GraduationCap, UserCheck,
+  BarChart2, Settings, FileText, FolderOpen, PenLine, TrendingUp,
+  MessageSquare, BookPlus,
+} from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
+
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
+  LayoutDashboard, BookOpen, Users, GraduationCap, UserCheck,
+  BarChart2, Settings, FileText, FolderOpen, PenLine, TrendingUp,
+  MessageSquare, BookPlus,
+};
 
 interface NavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 interface UserProfile {
@@ -51,7 +62,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ navItems, userPr
                   : 'text-gray-300 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <item.icon size={18} />
+              {ICON_MAP[item.icon] ? React.createElement(ICON_MAP[item.icon], { size: 18 }) : null}
               {item.label}
             </Link>
           );

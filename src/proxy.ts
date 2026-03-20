@@ -23,7 +23,7 @@ export async function proxy(request: NextRequest) {
         },
       }
     )
-    await supabase.auth.getSession()
+    await supabase.auth.getUser()
   } catch (e) {
     console.error('[proxy]', e)
   }

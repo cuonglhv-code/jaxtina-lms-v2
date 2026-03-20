@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { LayoutDashboard, BookOpen, PenLine, TrendingUp, MessageSquare, Settings } from 'lucide-react';
 
 export default async function LearnerLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,12 +19,12 @@ export default async function LearnerLayout({ children }: { children: React.Reac
   }
 
   const navItems = [
-    { label: 'Dashboard', href: '/learner/dashboard', icon: LayoutDashboard },
-    { label: 'My Courses', href: '/learner/courses', icon: BookOpen },
-    { label: 'Practice', href: '/learner/practice', icon: PenLine },
-    { label: 'My Progress', href: '/learner/progress', icon: TrendingUp },
-    { label: 'Feedback', href: '/learner/feedback', icon: MessageSquare },
-    { label: 'Settings', href: '/learner/settings', icon: Settings },
+    { label: 'Dashboard', href: '/learner/dashboard', icon: 'LayoutDashboard' },
+    { label: 'My Courses', href: '/learner/courses', icon: 'BookOpen' },
+    { label: 'Practice', href: '/learner/practice', icon: 'PenLine' },
+    { label: 'My Progress', href: '/learner/progress', icon: 'TrendingUp' },
+    { label: 'Feedback', href: '/learner/feedback', icon: 'MessageSquare' },
+    { label: 'Settings', href: '/learner/settings', icon: 'Settings' },
   ];
 
   return (

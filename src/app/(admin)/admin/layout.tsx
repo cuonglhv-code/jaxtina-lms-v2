@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { LayoutDashboard, BookOpen, Users, GraduationCap, UserCheck, BarChart2, Settings } from 'lucide-react';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // redirect() must stay OUTSIDE try/catch — it throws intentionally in Next.js
@@ -36,13 +35,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   const navItems = [
-    { label: 'Dashboard',  href: '/admin/dashboard',  icon: LayoutDashboard },
-    { label: 'Courses',    href: '/admin/courses',     icon: BookOpen },
-    { label: 'Classes',    href: '/admin/classes',     icon: Users },
-    { label: 'Learners',   href: '/admin/learners',    icon: GraduationCap },
-    { label: 'Teachers',   href: '/admin/teachers',    icon: UserCheck },
-    { label: 'Analytics',  href: '/admin/analytics',   icon: BarChart2 },
-    { label: 'Settings',   href: '/admin/settings',    icon: Settings },
+    { label: 'Dashboard',  href: '/admin/dashboard',  icon: 'LayoutDashboard' },
+    { label: 'Courses',    href: '/admin/courses',     icon: 'BookOpen' },
+    { label: 'Classes',    href: '/admin/classes',     icon: 'Users' },
+    { label: 'Learners',   href: '/admin/learners',    icon: 'GraduationCap' },
+    { label: 'Teachers',   href: '/admin/teachers',    icon: 'UserCheck' },
+    { label: 'Analytics',  href: '/admin/analytics',   icon: 'BarChart2' },
+    { label: 'Settings',   href: '/admin/settings',    icon: 'Settings' },
   ];
 
   return (
