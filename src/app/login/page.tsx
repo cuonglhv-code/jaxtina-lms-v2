@@ -15,19 +15,27 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    console.log('1. Attempting login for:', email)
+
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
+    console.log('2. Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+
     const { data, error: authError } = await supabase.auth
       .signInWithPassword({ email, password })
 
+    console.log('3. Auth result:', { user: data?.user?.id, error: authError?.message })
+
     if (authError || !data.user) {
-      setError(authError?.message || 'Invalid email or password.')
+      setError(authError?.message || 'Login failed')
       setLoading(false)
       return
     }
+
+    console.log('4. Fetching profile for:', data.user.id)
 
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
@@ -35,14 +43,11 @@ export default function LoginPage() {
       .eq('id', data.user.id)
       .maybeSingle()
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError.message)
-    }
-
-    // Log what we got for debugging
-    console.log('Profile result:', profile, 'Error:', profileError)
+    console.log('5. Profile result:', { profile, error: profileError?.message })
 
     const role = profile?.role
+    console.log('6. Role:', role, '— redirecting...')
+
     if (
       role === 'super_admin' ||
       role === 'centre_admin' ||
