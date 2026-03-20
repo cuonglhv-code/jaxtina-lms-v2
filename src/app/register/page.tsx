@@ -235,12 +235,12 @@ export default function RegisterPage() {
     })
 
     if (profileError) {
-      setGlobalError('Account created but profile setup failed. Please contact support.')
+      setGlobalError('Database error saving new user: ' + profileError.message)
       setLoading(false)
       return
     }
 
-    window.location.href = '/dashboard'
+    window.location.href = '/learner/dashboard'
   }
 
   return (
