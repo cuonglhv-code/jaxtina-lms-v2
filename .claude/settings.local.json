@@ -6,7 +6,10 @@
       "Bash(supabase status:*)",
       "Bash(npx supabase:*)",
       "Bash(cd:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat '/c/Users/cuong/Jaxtina LMS/src/app/\\(admin\\)/admin/settings/SettingsForm.tsx')",
+      "Bash(find:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
