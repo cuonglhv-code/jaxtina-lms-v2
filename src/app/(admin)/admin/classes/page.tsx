@@ -158,7 +158,9 @@ export default async function AdminClassesPage({
               <tbody>
                 {classes.map((cls) => (
                   <tr key={cls.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '14px 16px', fontWeight: 500, color: 'var(--ink)' }}>{cls.class_name}</td>
+                    <td style={{ padding: '14px 16px', fontWeight: 500, color: 'var(--ink)' }}>
+                      <Link href={`/admin/classes/${cls.id}`} style={{ color: 'var(--ink)', textDecoration: 'none' }}>{cls.class_name}</Link>
+                    </td>
                     <td style={{ padding: '14px 16px', color: 'var(--mist)' }}>{cls.courses?.title ?? '—'}</td>
                     <td style={{ padding: '14px 16px', color: 'var(--mist)' }}>{cls.teacher?.full_name ?? '—'}</td>
                     <td style={{ padding: '14px 16px', color: 'var(--mist)' }}>{formatDate(cls.start_date)}</td>

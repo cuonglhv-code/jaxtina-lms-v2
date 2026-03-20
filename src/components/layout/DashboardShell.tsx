@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Menu, X, LogOut,
+  Menu, X,
   LayoutDashboard, BookOpen, Users, GraduationCap, UserCheck,
   BarChart2, Settings, FileText, FolderOpen, PenLine, TrendingUp,
   MessageSquare, BookPlus,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { LangToggle } from '@/components/ui/LangToggle';
+import { LogoutButton } from '@/components/ui/LogoutButton';
 import { useLang } from '@/hooks/useLang';
 import { ROLE_LABELS } from '@/lib/i18n/translations';
 
@@ -83,13 +84,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ navItems, userPr
               <span className="font-sans text-xs text-[var(--mist)] uppercase tracking-wider">{roleLabel}</span>
             </div>
           </div>
-          <button
-            onClick={() => { window.location.href = '/logout'; }}
-            className="text-gray-400 hover:text-white transition-colors p-1"
-            aria-label="Logout"
-          >
-            <LogOut size={16} />
-          </button>
+          <LogoutButton />
         </div>
         <LangToggle />
       </div>

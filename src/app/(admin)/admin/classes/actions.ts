@@ -51,3 +51,59 @@ export async function createClass(formData: FormData) {
   revalidatePath('/admin/classes');
   redirect('/admin/classes');
 }
+
+export async function updateClass(formData: FormData) {
+  const supabase = await requireAdmin();
+
+  const id = formData.get('id') as string;
+  const class_name = formData.get('class_name') as string;
+  const course_id = formData.get('course_id') as string;
+  const teacher_id = formData.get('teacher_id') as string;
+  const start_date = formData.get('start_date') as string;
+  const end_date = formData.get('end_date') as string;
+  const max_students_raw = formData.get('max_students') as string;
+  const max_students = max_students_raw ? parseInt(max_students_raw, 10) : 20;
+
+  if (!id) throw new Error('Missing class id');
+  if (!class_name) throw new Error('Class name is required');
+
+  const { error } = await supabase
+    .from('classes')
+    .update({
+      class_name,
+      course_id: course_id || null,
+      teacher_id: teacher_id || null,
+      start_date: start_date || null,
+      end_date: end_date || null,
+      max_students: isNaN(max_students) ? 20 : max_students,
+    })
+    .eq('id', id);
+
+  if (error) throw new Error(`Failed to update class: ${error.message}`);
+
+  revalidatePath('/admin/classes');
+  revalidatePath(`/admin/classes/${id}`);
+  redirect(`/admin/classes/${id}`);
+}
+
+export async function updateClassStatus(formData: FormData) {
+  const supabase = await requireAdmin();
+
+  const id = formData.get('id') as string;
+  const status = formData.get('status') as string;
+
+  if (!id) throw new Error('Missing class id');
+  if (!['active', 'completed', 'cancelled'].includes(status)) {
+    throw new Error('Invalid status');
+  }
+
+  const { error } = await supabase
+    .from('classes')
+    .update({ status, is_active: status === 'active' })
+    .eq('id', id);
+
+  if (error) throw new Error(`Failed to update status: ${error.message}`);
+
+  revalidatePath('/admin/classes');
+  revalidatePath(`/admin/classes/${id}`);
+}

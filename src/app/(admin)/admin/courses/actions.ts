@@ -65,3 +65,45 @@ export async function createAdminCourse(formData: FormData) {
   revalidatePath('/admin/courses');
   redirect('/admin/courses');
 }
+
+export async function updateAdminCourse(formData: FormData) {
+  const supabase = await requireAdmin();
+
+  const id = formData.get('id') as string;
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string;
+  const level = formData.get('level') as string;
+  const target_skill = formData.get('target_skill') as string;
+  const exam_type = formData.get('exam_type') as string;
+
+  if (!id) throw new Error('Missing course id');
+  if (!title) throw new Error('Title is required');
+
+  const { error } = await supabase
+    .from('courses')
+    .update({
+      title,
+      description: description || null,
+      level: level || null,
+      target_skill: target_skill || null,
+      exam_type: exam_type || 'General English',
+    })
+    .eq('id', id);
+
+  if (error) throw new Error(`Failed to update course: ${error.message}`);
+
+  revalidatePath('/admin/courses');
+  redirect('/admin/courses');
+}
+
+export async function deleteCourse(formData: FormData) {
+  const supabase = await requireAdmin();
+
+  const id = formData.get('id') as string;
+  if (!id) throw new Error('Missing course id');
+
+  const { error } = await supabase.from('courses').delete().eq('id', id);
+  if (error) throw new Error(`Failed to delete course: ${error.message}`);
+
+  revalidatePath('/admin/courses');
+}
