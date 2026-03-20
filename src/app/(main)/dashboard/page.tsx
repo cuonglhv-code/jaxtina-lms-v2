@@ -4,7 +4,7 @@ import { Profile } from "@/types/database";
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return redirect("/sign-in");
+  if (authError || !user) return redirect("/login");
   const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
     .select("role")
