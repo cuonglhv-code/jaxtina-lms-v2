@@ -18,15 +18,33 @@ END
 $$;
 
 -- RLS: admins full access on classes
-CREATE POLICY IF NOT EXISTS "admins_all_classes" ON classes FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles
-      WHERE id = auth.uid()
-        AND role IN ('super_admin', 'centre_admin', 'academic_admin')
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'classes' AND policyname = 'admins_all_classes'
+  ) THEN
+    CREATE POLICY "admins_all_classes" ON classes FOR ALL
+      USING (
+        EXISTS (
+          SELECT 1 FROM user_profiles
+          WHERE id = auth.uid()
+            AND role IN ('super_admin', 'centre_admin', 'academic_admin')
+        )
+      );
+  END IF;
+END
+$$;
 
 -- RLS: teachers can select classes they're assigned to
-CREATE POLICY IF NOT EXISTS "teachers_select_own_classes" ON classes FOR SELECT
-  USING (teacher_id = auth.uid());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'classes' AND policyname = 'teachers_select_own_classes'
+  ) THEN
+    CREATE POLICY "teachers_select_own_classes" ON classes FOR SELECT
+      USING (teacher_id = auth.uid());
+  END IF;
+END
+$$;
