@@ -12,7 +12,7 @@ export default async function LearnerLayout({ children }: { children: React.Reac
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile || profile.role !== 'learner') {
     redirect('/login'); // Fallback redirect

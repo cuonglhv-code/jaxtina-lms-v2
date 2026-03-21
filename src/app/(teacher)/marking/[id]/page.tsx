@@ -24,7 +24,7 @@ export default async function MarkingDetailPage(props: {
       profiles:student_id ( id, full_name, role )
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error || !submission) return notFound();
 

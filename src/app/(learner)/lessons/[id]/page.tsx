@@ -19,7 +19,7 @@ export default async function LessonPage(props: {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    return redirect("/login");
   }
 
   // Fetch lesson details along with activities
@@ -31,7 +31,7 @@ export default async function LessonPage(props: {
       activities ( id, title, type, exam_target )
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (lessonError || !lesson) {
     return notFound();

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/Avatar';
 import { updateUserRole } from './actions';
@@ -29,10 +29,7 @@ export default async function UserDetailPage({
 
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    const { redirect } = await import('next/navigation');
-    redirect('/login');
-  }
+  if (authError || !user) redirect('/login');
 
   const { data: target, error } = await supabase
     .from('user_profiles')

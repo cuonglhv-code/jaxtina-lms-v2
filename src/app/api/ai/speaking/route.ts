@@ -43,11 +43,10 @@ export async function POST(req: Request) {
       const feedbackJson = jsonMatch ? JSON.parse(jsonMatch[0]) : { error: "Failed to parse AI response" };
 
       await supabase.from('ai_feedback_logs').insert({
-        student_id: user.id,
-        content: transcript,
-        feedback: feedbackJson,
-        type: 'speaking'
-      });
+        prompt: `speaking\ntopic:${task_topic || ''}\n\n${transcript}`,
+        response: JSON.stringify(feedbackJson),
+        model: 'claude-3-5-sonnet-20240620',
+      }).maybeSingle();
 
       return NextResponse.json(feedbackJson);
     } catch (parseError) {

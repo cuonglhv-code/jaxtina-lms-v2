@@ -1,21 +1,26 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { StatCard } from '@/components/layout/StatCard';
 import { Target, Trophy, CheckCircle, FileText, Calendar, Flame, ArrowRight, BookOpen, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Submission, ClassEnrolment, Class, Course, Activity, Score } from '@/types/database';
- 
+
 export default async function LearnerDashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return null;
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) redirect('/login');
 
   // 1. Fetch Learner Info
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
+
+  if (!profile || profile.role !== 'learner') redirect('/login');
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Learner';
   const currentBand = user?.user_metadata?.current_band || '—';

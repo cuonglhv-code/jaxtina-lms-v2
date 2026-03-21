@@ -1,128 +1,175 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { StatCard } from "@/components/layout/StatCard";
-import { ThroughputFunnel, BandDistribution } from "@/components/admin/AnalyticsCharts";
-import { calculateAverage, calculateAIAccuracy } from "@/lib/utils/analytics";
-import { Users, GraduationCap, Clock, ShieldCheck, TrendingUp, Sparkles } from "lucide-react";
+export const dynamic = 'force-dynamic';
+
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { Users, BookOpen, GraduationCap, TrendingUp, CalendarDays, Star } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) redirect('/login');
 
-  if (!user) return redirect('/login');
-
-  // 1. Parallel Data Fetching
-  const [
-    { count: totalLearners },
-    { data: submissionStats },
-    { data: scoreRecords },
-    { data: aiLogRecords }
-  ] = await Promise.all([
-    supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('role', 'learner'),
-    supabase.from('submissions').select('status'),
-    supabase.from('scores').select('submission_id, score'),
-    supabase.from('ai_feedback_logs').select('submission_id, response')
+  // Fetch data in parallel
+  const [{ data: allProfiles }, { data: allCourses }, { data: allClasses }] = await Promise.all([
+    supabase.from('user_profiles').select('id, role, created_at'),
+    supabase.from('courses').select('id, is_published, created_at'),
+    supabase.from('classes').select('id, status, created_at'),
   ]);
 
-  // 2. Throughput Calculation
-  const throughputData = [
-    { label: 'Submitted', value: submissionStats?.filter(s => s.status === 'submitted').length || 0, color: 'var(--ocean)' },
-    { label: 'Under Review', value: submissionStats?.filter(s => s.status === 'under_review').length || 0, color: '#f59e0b' },
-    { label: 'Graded', value: submissionStats?.filter(s => s.status === 'graded').length || 0, color: 'var(--jade)' }
+  const profiles = allProfiles ?? [];
+  const courses = allCourses ?? [];
+  const classes = allClasses ?? [];
+
+  const learners = profiles.filter(p => p.role === 'learner').length;
+  const teachers = profiles.filter(p => p.role === 'teacher').length;
+  const admins = profiles.filter(p => ['super_admin', 'centre_admin', 'academic_admin'].includes(p.role)).length;
+  const published = courses.filter(c => c.is_published).length;
+  const draft = courses.length - published;
+
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const newThisMonth = profiles.filter(p => p.created_at >= firstOfMonth).length;
+
+  // Monthly registrations for last 6 months
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const recent = profiles.filter(p => new Date(p.created_at) >= sixMonthsAgo);
+  const monthlyMap: Record<string, number> = {};
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    monthlyMap[key] = 0;
+  }
+  recent.forEach(p => {
+    const key = new Date(p.created_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    if (key in monthlyMap) monthlyMap[key]++;
+  });
+  const peakMonth = Math.max(...Object.values(monthlyMap), 1);
+
+  const statCards = [
+    { label: 'Total Users', value: profiles.length, icon: Users, color: '#0D1B2A' },
+    { label: 'Learners', value: learners, icon: GraduationCap, color: '#0E9F6E' },
+    { label: 'Teachers', value: teachers, icon: Star, color: '#1B4F72' },
+    { label: 'Total Courses', value: courses.length, icon: BookOpen, color: '#7c3aed' },
+    { label: 'Published', value: published, icon: TrendingUp, color: '#0E9F6E' },
+    { label: 'New This Month', value: newThisMonth, icon: CalendarDays, color: '#f59e0b' },
   ];
 
-  // 3. Performance & AI Metrics
-  const averageBand = calculateAverage(scoreRecords?.map(s => s.score) || []);
-  const aiStats = calculateAIAccuracy(scoreRecords || [], aiLogRecords || []);
-
-  const bands = [4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5];
-  const bandDistData = bands.map(band => ({
-    label: band.toFixed(1),
-    value: scoreRecords?.filter(s => s.score === band).length || 0
-  }));
-  // Special handling for 7.5+
-  const topBandCount = scoreRecords?.filter(s => s.score > 7.5).length || 0;
-  if (topBandCount > 0) {
-    bandDistData[bandDistData.length - 1].label = '7.5+';
-    bandDistData[bandDistData.length - 1].value += topBandCount;
-  }
+  const card: CSSProperties = {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--card-shadow)',
+    padding: 24,
+  };
 
   return (
-    <div className="space-y-10 p-2">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="font-display text-[32px] text-[var(--midnight)] tracking-tighter">Command Center</h1>
-          <p className="font-sans text-[var(--mist)] mt-1">Real-time academic performance oversight</p>
-        </div>
-        <div className="px-4 py-2 bg-white rounded-2xl border border-[var(--border)] flex items-center gap-3 shadow-sm">
-          <ShieldCheck className="text-[var(--jade)]" size={18} />
-          <span className="text-xs font-black uppercase tracking-widest text-[var(--midnight)] italic">Live Center Sync</span>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <div>
+        <h1 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 28, color: 'var(--midnight)', marginBottom: 4 }}>Analytics</h1>
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--mist)' }}>Centre-wide performance overview</p>
       </div>
 
-      {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={Users} iconBg="var(--ocean)" value={totalLearners || 0} label="Total Learners" />
-        <StatCard icon={GraduationCap} iconBg="var(--jade)" value={averageBand} label="Avg Centre Band" />
-        <StatCard icon={Clock} iconBg="#f59e0b" value={throughputData[1].value} label="Marking Queue" />
-        <StatCard 
-          icon={Sparkles} 
-          iconBg="var(--midnight)" 
-          value={`${aiStats.accuracyPercent}%`} 
-          label="AI Reliability Index" 
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Throughput Section */}
-        <section className="bg-white rounded-[2.5rem] border border-[var(--border)] p-10 shadow-[var(--card-shadow)] space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="font-display text-xl text-[var(--midnight)]">Submission Flow</h3>
-              <p className="font-sans text-xs text-[var(--mist)] uppercase tracking-widest italic font-bold">Throughput Funnel</p>
-            </div>
-            <TrendingUp size={20} className="text-[var(--jade)]" />
-          </div>
-          <ThroughputFunnel data={throughputData} />
-        </section>
-
-        {/* Band Distribution Section */}
-        <section className="bg-white rounded-[2.5rem] border border-[var(--border)] p-10 shadow-[var(--card-shadow)] space-y-8">
-          <div className="space-y-1">
-            <h3 className="font-display text-xl text-[var(--midnight)]">Academic Performance</h3>
-            <p className="font-sans text-xs text-[var(--mist)] uppercase tracking-widest italic font-bold">IELTS Band Distribution</p>
-          </div>
-          <BandDistribution data={bandDistData} />
-        </section>
-      </div>
-
-      {/* AI Performance Insight Layer */}
-      <section className="bg-[var(--midnight)] rounded-[3rem] p-12 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
-        <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h2 className="font-display text-3xl font-black italic tracking-tighter leading-tight">AI Reliability & <br />Standard Matching</h2>
-            <p className="text-[#94A3B8] text-sm leading-relaxed max-w-md">
-              Our AI evaluation system (Claude 3.5 Sonnet) is currently matched against human senior examiners with a Mean Absolute Error of <strong className="text-white">{aiStats.mae} bands</strong>.
-            </p>
-            <div className="flex gap-4">
-              <div className="px-4 py-2 bg-white/10 rounded-xl border border-white/10">
-                <p className="text-[10px] text-[#94A3B8] uppercase font-black tracking-widest mb-1">Mean Absolute Error</p>
-                <p className="text-xl font-display font-black italic text-[var(--jade)]">{aiStats.mae}</p>
-              </div>
-            </div>
-          </div>
-          <div className="h-[200px] w-full bg-white/5 rounded-[2rem] border border-white/10 p-8 flex flex-col justify-center items-center text-center space-y-4">
-            <div className="w-20 h-20 bg-[var(--jade)]/20 text-[var(--jade)] rounded-full flex items-center justify-center scale-125">
-               <Sparkles size={32} />
+      {/* Stat Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
+        {statCards.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${color}18` }}>
+              <Icon size={18} color={color} />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-black tracking-widest text-[#94A3B8]">Reliability Grade</p>
-              <h3 className="text-2xl font-display font-black italic uppercase">Precision Grade A</h3>
+              <div style={{ fontFamily: 'Instrument Serif, serif', fontSize: 32, color: 'var(--ink)', lineHeight: 1 }}>{value}</div>
+              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--mist)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{label}</div>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+
+        {/* Monthly Registrations */}
+        <div style={card}>
+          <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 20, color: 'var(--midnight)', marginBottom: 20 }}>Registrations (Last 6 Months)</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {Object.entries(monthlyMap).map(([month, count]) => (
+              <div key={month} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--mist)', width: 70, flexShrink: 0 }}>{month}</span>
+                <div style={{ flex: 1, height: 8, backgroundColor: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 4, backgroundColor: 'var(--jade)', width: `${Math.max((count / peakMonth) * 100, count > 0 ? 4 : 0)}%` }} />
+                </div>
+                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 600, color: 'var(--ink)', width: 24, textAlign: 'right' }}>{count}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+
+        {/* User Breakdown */}
+        <div style={card}>
+          <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 20, color: 'var(--midnight)', marginBottom: 20 }}>User Breakdown</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { label: 'Learners', count: learners, color: '#0E9F6E' },
+              { label: 'Teachers', count: teachers, color: '#1B4F72' },
+              { label: 'Admins', count: admins, color: '#7c3aed' },
+            ].map(({ label, count, color }) => (
+              <div key={label}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>{label}</span>
+                  <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--mist)' }}>{count} / {profiles.length}</span>
+                </div>
+                <div style={{ height: 8, backgroundColor: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 4, backgroundColor: color, width: `${profiles.length > 0 ? (count / profiles.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Course Status */}
+        <div style={card}>
+          <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 20, color: 'var(--midnight)', marginBottom: 20 }}>Course Status</h2>
+          {courses.length === 0 ? (
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--mist)' }}>No courses yet.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                { label: 'Published', count: published, color: '#0E9F6E' },
+                { label: 'Draft', count: draft, color: '#8892A4' },
+              ].map(({ label, count, color }) => (
+                <div key={label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--mist)' }}>{count} courses</span>
+                  </div>
+                  <div style={{ height: 8, backgroundColor: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 4, backgroundColor: color, width: `${courses.length > 0 ? (count / courses.length) * 100 : 0}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Platform Info */}
+        <div style={card}>
+          <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: 20, color: 'var(--midnight)', marginBottom: 20 }}>Platform Info</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              ['Application', 'Jaxtina EduOS v1.0'],
+              ['Stack', 'Next.js 15 · Supabase · Anthropic AI'],
+              ['Environment', 'Production'],
+              ['Total Classes', String(classes.length)],
+              ['Active Classes', String(classes.filter(c => c.status === 'active' || c.status == null).length)],
+            ].map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid var(--border)', fontFamily: 'DM Sans, sans-serif', fontSize: 13 }}>
+                <span style={{ color: 'var(--mist)' }}>{k}</span>
+                <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

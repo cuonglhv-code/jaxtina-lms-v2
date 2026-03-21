@@ -34,7 +34,7 @@ export default async function EditCoursePage(props: {
       )
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error || !course) return notFound();
 

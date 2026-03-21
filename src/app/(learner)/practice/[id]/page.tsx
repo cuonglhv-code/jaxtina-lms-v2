@@ -19,7 +19,7 @@ export default async function ActivityPracticePage(props: {
     .from('activities')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (activityError || !activity) return notFound();
 

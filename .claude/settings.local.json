@@ -9,7 +9,11 @@
       "Bash(npx tsc:*)",
       "Bash(cat '/c/Users/cuong/Jaxtina LMS/src/app/\\(admin\\)/admin/settings/SettingsForm.tsx')",
       "Bash(find:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(head -20 find \"C:/Users/cuong/Jaxtina LMS/src/app/\\(admin\\)\" -maxdepth 2 -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(sort find:*)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(echo \"TSC Exit: $?\")"
     ]
   }
 }

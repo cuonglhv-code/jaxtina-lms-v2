@@ -19,7 +19,7 @@ export default async function CourseDetailPage(props: {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    return redirect("/login");
   }
 
   // Fetch course details
@@ -27,7 +27,7 @@ export default async function CourseDetailPage(props: {
     .from('courses')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (courseError || !course) {
     return notFound();

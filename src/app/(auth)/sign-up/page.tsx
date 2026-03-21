@@ -135,7 +135,7 @@ export default async function SignUpPage(props: {
             <CardFooter className="p-8 pt-0 flex justify-center">
               <p className="text-zinc-400 font-bold text-xs uppercase tracking-tight">
                 Already registered?{" "}
-                <Link href="/sign-in" className="text-zinc-900 dark:text-white underline underline-offset-4 decoration-zinc-900/20 hover:decoration-zinc-900 transition-all">
+                <Link href="/login" className="text-zinc-900 dark:text-white underline underline-offset-4 decoration-zinc-900/20 hover:decoration-zinc-900 transition-all">
                   Authenticate Instead
                 </Link>
               </p>

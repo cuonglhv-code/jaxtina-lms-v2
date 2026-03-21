@@ -1,4 +1,7 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { StatCard } from '@/components/layout/StatCard';
 import { Users, GraduationCap, Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -6,16 +9,18 @@ import { Profile, Submission, ClassTeacher, Class, Course, Activity } from '@/ty
 
 export default async function TeacherDashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return null;
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) redirect('/login');
 
   // 1. Fetch Teacher Profile
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
+
+  if (!profile || profile.role !== 'teacher') redirect('/login');
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Teacher';
 

@@ -45,6 +45,9 @@
 
 BEGIN;
 
+-- Bypass FK checks so we can seed in any order regardless of live schema differences.
+SET session_replication_role = replica;
+
 -- =============================================================================
 -- SECTION 1: AUTH.USERS
 -- Fixed UUIDs so this seed is idempotent.
@@ -1850,5 +1853,8 @@ ON CONFLICT (id) DO NOTHING;
 --   scores:              4 rows
 --   feedback:            5 rows (4 visible, 1 internal AI draft)
 -- =============================================================================
+
+-- Restore FK enforcement
+SET session_replication_role = DEFAULT;
 
 COMMIT;

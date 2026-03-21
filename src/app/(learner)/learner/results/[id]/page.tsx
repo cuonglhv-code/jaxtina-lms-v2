@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { t, type Lang } from '@/lib/i18n/translations';
 import type { Score, Feedback, Submission, Activity } from '@/types/database';
@@ -61,10 +61,7 @@ export default async function ResultsPage({
 
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    const { redirect } = await import('next/navigation');
-    redirect('/login');
-  }
+  if (authError || !user) redirect('/login');
 
   // Fetch submission (verify ownership), score, and visible feedback in parallel
   const [

@@ -9,7 +9,7 @@ export default async function DashboardPage() {
     .from("user_profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
   if (profileError || !profile) {
     console.error("Profile lookup failed:", profileError);
     return redirect("/login");

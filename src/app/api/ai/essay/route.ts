@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     Task Instructions: ${instructions || 'N/A'}`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-opuses-20240229', // or claude-3-5-sonnet-20240620
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       system: systemPrompt,
       messages: [{ role: 'user', content: content }],
@@ -46,13 +46,12 @@ export async function POST(req: Request) {
       const jsonMatch = feedbackText.match(/\{[\s\S]*\}/);
       const feedbackJson = jsonMatch ? JSON.parse(jsonMatch[0]) : { error: "Failed to parse AI response" };
       
-      // Log the feedback for auditing
+      // Log the feedback for auditing (best-effort, don't fail if no submission_id)
       await supabase.from('ai_feedback_logs').insert({
-        student_id: user.id,
-        content: content,
-        feedback: feedbackJson,
-        type: type || 'essay'
-      });
+        prompt: `type:${type || 'essay'}\n\n${instructions || ''}\n\n${content}`,
+        response: JSON.stringify(feedbackJson),
+        model: 'claude-sonnet-4-6',
+      }).maybeSingle();
 
       return NextResponse.json(feedbackJson);
     } catch (parseError) {

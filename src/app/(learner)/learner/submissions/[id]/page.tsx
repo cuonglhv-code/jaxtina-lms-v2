@@ -26,7 +26,7 @@ export default async function SubmissionResultPage(props: {
     `)
     .eq('id', id)
     .eq('student_id', user.id) // Security: Essential ownership check
-    .single();
+    .maybeSingle();
 
   if (error || !submission) return notFound();
 

@@ -12,7 +12,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile || profile.role !== 'teacher') {
     redirect('/learner/dashboard'); // Fallback redirect

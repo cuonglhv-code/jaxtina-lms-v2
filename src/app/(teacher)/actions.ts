@@ -14,7 +14,7 @@ export async function createCourse(formData: FormData) {
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const allowedRoles = ['teacher', 'super_admin', 'centre_admin', 'academic_admin'];
   if (!profile || !allowedRoles.includes(profile.role)) {
@@ -55,7 +55,7 @@ export async function finalizeMarkingAction(formData: FormData) {
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const allowedRoles = ['teacher', 'super_admin', 'centre_admin', 'academic_admin'];
   if (!profile || !allowedRoles.includes(profile.role)) {

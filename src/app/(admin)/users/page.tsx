@@ -16,7 +16,7 @@ export default async function UserManagementPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    return redirect("/login");
   }
 
   // Fetch all profiles

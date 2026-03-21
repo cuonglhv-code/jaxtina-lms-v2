@@ -34,7 +34,7 @@ export default async function MarkingPage(props: {
       feedback(*)
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error || !submissionData) return notFound();
 
